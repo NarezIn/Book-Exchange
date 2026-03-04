@@ -6,10 +6,12 @@ user authentication, and database interaction.
 """
 import os
 import datetime
+from uuid import uuid4 as uuid_uuid4
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 
@@ -31,6 +33,18 @@ db = client[os.getenv("MONGO_DBNAME")]
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redirects unauthorized users here
+
+# Configuration for local uploads
+# Switch to Cloudinary later for storing uploaded images.
+UPLOAD_FOLDER = 'static/seed_post_imgs'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    """
+    Helper function, check if filename has allowed extension.
+    """
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -61,14 +75,12 @@ def register():
         password = request.form.get('password')
         # Check if user already exists to avoid duplicates.
         # If yes, redirect back and give another chance.
-        if db.users.find_one({"username": username}):
+        if dbm.get_user_by_username(db, username):
             flash('Username already exists. Pick a different one!')
             return redirect(url_for('register'))
         # Hash the password for security
         hashed_password = generate_password_hash(password)
         # Create the user document based on the user schema.
-        # Create more fields later! e.g. email, liked_posts, sent_posts.
-        # Note that we should store post IDs.
         new_user = {
             "username": username,
             "password": hashed_password,
@@ -76,7 +88,7 @@ def register():
             "liked_posts": [],
             "sent_posts": []
         }
-        db.users.insert_one(new_user)
+        dbm.add_user_to_db(db, new_user)
         flash('Account created! Please login.')
         return redirect(url_for('login'))
     return render_template('register.html')
@@ -113,8 +125,8 @@ def home():
             "$or": [
                 {"title": {"$regex": query, "$options": "i"}},
                 {"author": {"$regex": query, "$options": "i"}},
-                {"description": {"$regex": query, "$options": "i"}},
-                {"lender_name": {"$regex": query, "$options": "i"}}
+                {"other_info": {"$regex": query, "$options": "i"}},
+                {"sender_name": {"$regex": query, "$options": "i"}}
             ]
         }))
     return render_template('home.html', books = books, enteredQuery = query)
@@ -139,7 +151,7 @@ def account():
 
     # For GET requests
     # For the IDs stored in liked_posts
-    # find all post IDs that the user liked, some are deleted
+    # find all post IDs that the user liked, notice some might be deleted
     liked_ids = current_user.liked_posts
     # ids exist in both liked_posts and the posts collection
     found_books = list(db.posts.find({"_id": {"$in": liked_ids}}))
@@ -166,14 +178,15 @@ def delete_post(post_id):
     We don't handle deleting this book's ID for any user that liked this book. 
     That would be handled when we fetch the posts for the 'liked_posts' list in the account page,
     when a specific user enters their account page.
+    # TODO: Delete this post's images also.
     """
     p_id = ObjectId(post_id)
     user_id = ObjectId(current_user.id)
 
-    post = db.posts.find_one({"_id": p_id, "lender_id": str(user_id)})
+    post = db.posts.find_one({"_id": p_id, "sender_id": user_id})
     if not post:
-        # 403 means the server does not allow this action. 
-        # This should never happen because the delete button should only show for the lender, 
+        # 403 means the server does not allow this action.
+        # This should never happen because the delete button should only show for the lender,
         # but good to have just in case.
         return {"error": "Can't find this post or it's sender!"}, 403
     # Remove this post's ID from this user's 'sent_posts' field.
@@ -195,18 +208,48 @@ def create_post():
     Links the new post ID to the user's 'sent_post' list.
     """
     if request.method == 'POST':
+        # Get the form data for the new post from request.
         title = request.form.get('title')
         author = request.form.get('author')
-        description = request.form.get('description') # create more fields later.
+        listing_type = request.form.get('listing_type') # lending/selling/donating/showing off.
+        price = request.form.get('price') # maybe empty if not selling.
+        # print("Price is:", price, "Its type is", type(price)) # for debugging.
+        other_info = request.form.get('other_info')
+        files = request.files.getlist('images')
+        # Check if verify all files have valid extensions before saving anything.
+        for file in files:
+            if file and file.filename:
+                if not allowed_file(file.filename):
+                    flash(f"We only support {', '.join(ALLOWED_EXTENSIONS)}.", "error")
+                    return render_template('create_post.html')
+        # Handle uploaded images
+        image_filenames = []
+        for file in files:
+            if file and file.filename:
+                file_ext = file.filename.rsplit('.', 1)[1].lower()
+                # new filename: user_id + random_uuid + original_ext
+                file_newname = f"{current_user.id}_{uuid_uuid4().hex}.{file_ext}"
+                # make sure the folder to store images exists. If not, create one.
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_newname))
+                image_filenames.append(file_newname)
         new_post = {
             "title": title,
             "author": author,
-            "description": description,
-            "lender_id": current_user.id, # should be ObjectId.
-            "lender_name": current_user.username,
+            "listing_type": listing_type,
+            "price": float(price) if price else None,
+            "images": image_filenames, # a list of images uploaded.
+            "other_info": other_info,
+            "sender_id": ObjectId(current_user.id), # sender as in post sender.
+            "sender_name": current_user.username,
+            # "sender_email": current_user.email,
+            # If a user changes their email. This post might be fucked up.
+            # Make the logic clearer. We can discuss later.
             'num_ppl_wanted': 0,
-            "created_at": datetime.datetime.now(datetime.timezone.utc)
+            "created_at": datetime.datetime.now(datetime.timezone.utc),
+            "available": True
         }
+
         current_post = db.posts.insert_one(new_post)
         current_post_id = current_post.inserted_id
         # Update the current_user's 'sent_post' list with the ID of this new post.
@@ -236,7 +279,7 @@ def like_book(book_id):
     if not current_bk:
         return {"error": "Book not found"}, 404
     # Check if current user sent this post.
-    if str(current_bk.get('lender_id')) == str(current_user.id):
+    if str(current_bk.get('sender_id')) == str(current_user.id):
         return {"error": "Are you trying to like your own post? LOL"}, 400
     # Check if curr_user has already liked this book.
     liked_posts = current_user.liked_posts
