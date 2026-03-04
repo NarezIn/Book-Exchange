@@ -7,9 +7,11 @@ user authentication, and database interaction.
 import os
 import datetime
 from dotenv import load_dotenv
+from uuid import uuid4 as uuid_uuid4
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 
@@ -31,6 +33,18 @@ db = client[os.getenv("MONGO_DBNAME")]
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redirects unauthorized users here
+
+# Configuration for local uploads
+# Switch to Cloudinary later for storing uploaded images.
+UPLOAD_FOLDER = 'static/seed_post_imgs'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    """
+    Helper function, check if filename has allowed extension.
+    """
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -195,18 +209,45 @@ def create_post():
     Links the new post ID to the user's 'sent_post' list.
     """
     if request.method == 'POST':
+        # Get the form data for the new post from request.
         title = request.form.get('title')
         author = request.form.get('author')
-        description = request.form.get('description') # create more fields later.
+        listing_type = request.form.get('listing_type') # lending/selling/donating/showing off.
+        price = request.form.get('price') # maybe empty if not selling.
+        print("Price is:", price) # for debugging.
+        other_info = request.form.get('other_info')
+        files = request.files.getlist('images')
+        # Check if verify all files have valid extensions before saving anything.
+        for file in files:
+            if file and file.filename:
+                if not allowed_file(file.filename):
+                    flash(f"We only support {', '.join(ALLOWED_EXTENSIONS)}.", "error")
+                    return render_template('create_post.html')
+        # Handle uploaded images
+        image_filenames = []
+        for file in files:
+            if file and file.filename:
+                file_ext = file.filename.rsplit('.', 1)[1].lower()
+                # new filename: user_id + random_uuid + original_ext
+                file_newname = f"{current_user.id}_{uuid_uuid4().hex}.{file_ext}"
+                # make sure the folder to store images exists. If not, create one.
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_newname))
+                image_filenames.append(file_newname)
         new_post = {
             "title": title,
             "author": author,
-            "description": description,
-            "lender_id": current_user.id, # should be ObjectId.
-            "lender_name": current_user.username,
+            "listing_type": listing_type,
+            "price": float(price) if price else None,
+            "images": image_filenames, # a list of images uploaded.
+            "other_info": other_info,
+            "sender_id": ObjectId(current_user.id), # sender as in post sender.
+            "sender_name": current_user.username,
             'num_ppl_wanted': 0,
-            "created_at": datetime.datetime.now(datetime.timezone.utc)
+            "created_at": datetime.datetime.now(datetime.timezone.utc),
+            "available": True
         }
+
         current_post = db.posts.insert_one(new_post)
         current_post_id = current_post.inserted_id
         # Update the current_user's 'sent_post' list with the ID of this new post.
@@ -228,6 +269,7 @@ def like_book(book_id):
     When a user clicks the 'Like' button on a book post, this route is triggered.
     Find the book and increment the 'num_ppl_wanted' field by 1.
     """
+    # TODO: str comparison of id should be converted to ObjectId comparison.
     user_id = ObjectId(current_user.id)
     bk_id = ObjectId(book_id)
 

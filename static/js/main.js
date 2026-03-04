@@ -20,6 +20,21 @@ function viewDetails(bookId) {
     window.location.href = `/book/${bookId}`;
 }
 
+function togglePriceField() {
+    const selector = document.getElementById('listing_type');
+    const priceContainer = document.getElementById('price-container');
+    const priceInput = document.getElementById('price');
+
+    if (selector.value === 'Selling') {
+        priceContainer.style.display = 'block';
+        priceInput.setAttribute('required', 'true'); // Make price mandatory if selling
+    } else {
+        priceContainer.style.display = 'none';
+        priceInput.removeAttribute('required');      // Not needed for lending
+        priceInput.value = "";                       // Clear it if they switch back
+    }
+}
+
 /*
  * Handles the "I want to borrow/buy" button click logic.
  * Communicates with the Flask backend to increment the interest count.
