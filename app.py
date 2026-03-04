@@ -127,8 +127,8 @@ def home():
             "$or": [
                 {"title": {"$regex": query, "$options": "i"}},
                 {"author": {"$regex": query, "$options": "i"}},
-                {"description": {"$regex": query, "$options": "i"}},
-                {"lender_name": {"$regex": query, "$options": "i"}}
+                {"other_info": {"$regex": query, "$options": "i"}},
+                {"sender_name": {"$regex": query, "$options": "i"}}
             ]
         }))
     return render_template('home.html', books = books, enteredQuery = query)
@@ -214,7 +214,7 @@ def create_post():
         author = request.form.get('author')
         listing_type = request.form.get('listing_type') # lending/selling/donating/showing off.
         price = request.form.get('price') # maybe empty if not selling.
-        print("Price is:", price) # for debugging.
+        print("Price is:", price, "Its type is", type(price)) # for debugging.
         other_info = request.form.get('other_info')
         files = request.files.getlist('images')
         # Check if verify all files have valid extensions before saving anything.
@@ -243,6 +243,9 @@ def create_post():
             "other_info": other_info,
             "sender_id": ObjectId(current_user.id), # sender as in post sender.
             "sender_name": current_user.username,
+            # "sender_email": current_user.email,
+            # If a user changes their email. This post might be fucked up.
+            # Make the logic clearer. We can discuss later.
             'num_ppl_wanted': 0,
             "created_at": datetime.datetime.now(datetime.timezone.utc),
             "available": True
@@ -269,7 +272,6 @@ def like_book(book_id):
     When a user clicks the 'Like' button on a book post, this route is triggered.
     Find the book and increment the 'num_ppl_wanted' field by 1.
     """
-    # TODO: str comparison of id should be converted to ObjectId comparison.
     user_id = ObjectId(current_user.id)
     bk_id = ObjectId(book_id)
 
@@ -278,7 +280,7 @@ def like_book(book_id):
     if not current_bk:
         return {"error": "Book not found"}, 404
     # Check if current user sent this post.
-    if str(current_bk.get('lender_id')) == str(current_user.id):
+    if str(current_bk.get('sender_id')) == str(current_user.id):
         return {"error": "Are you trying to like your own post? LOL"}, 400
     # Check if curr_user has already liked this book.
     liked_posts = current_user.liked_posts

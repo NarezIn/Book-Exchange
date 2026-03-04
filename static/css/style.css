@@ -22,3 +22,12 @@
     transform: translateY(-4px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
+
+.book-cover {
+    width: 100%;
+    height: 100%;
+    /* This is the magic property: it acts like 'background-size: cover' for <img> tags */
+    object-fit: cover; 
+    object-position: center;
+    display: block;
+}
