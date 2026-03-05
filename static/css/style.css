@@ -1,8 +1,22 @@
+/* Styling for base page */
+/* Logo */
+.website-logo {
+    font-size : 32px;
+    font-weight : 700;
+    text-align: center;
+}
+
+/* navigation bar */
+.site-nav {
+    text-align: right;
+}
+
+
 /* Styling for home page begins */
 /* Container for all posts */
 .book-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     padding: 20px;
 }
@@ -16,6 +30,14 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     cursor: pointer;
     transition: transform 0.2s;
+}
+
+.book-post p {
+    margin: 3px 0;
+}
+
+.book-post h3 {
+    margin: 0 0 4px 0;
 }
 
 /* Hover effect for desktop, makes it feel interactive */
@@ -32,6 +54,24 @@
     object-position: center;
     display: block;
 }
+
+/* Search bar and container */
+.search-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.search-bar {
+    padding: 4px;
+    font-size: 16px;
+}
+
+.search-text {
+    font-size: 16px;
+    font-weight : 700;
+}
+
 /* Styling for home page ends */
 
 /* Styling for book_details page begins */
