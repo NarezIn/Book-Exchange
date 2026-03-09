@@ -6,14 +6,15 @@ user authentication, and database interaction.
 """
 import os
 import datetime
-from uuid import uuid4 as uuid_uuid4
+# from uuid import uuid4 as uuid_uuid4
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
+# from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
 from pymongo import MongoClient
+import cloudinary, cloudinary.uploader, cloudinary.api
 
 # Import the custom database module we wrote
 # To separate it from the db in the mongo client, we name it dbm (database module)
@@ -39,6 +40,7 @@ login_manager.login_view = 'login'  # Redirects unauthorized users here
 UPLOAD_FOLDER = 'static/seed_post_imgs'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+cloud_config = cloudinary.config(secure=True)
 
 # Global variables
 VALID_SEARCH_FIELDS = ['title', 'author', 'sender_name', 'other_info']
@@ -131,7 +133,7 @@ def home():
 
     # Try to look for terms with advanced search syntax
     # if the key is not in the valid search list, process as regular search term
-    # for example, it doesn't search for "sapiens" in the DB for "Sapiens: A Brief History of Humankind"
+    # e.g, it doesn't search for "sapiens" in the DB for "Sapiens: A Brief History of Humankind"
     for term in terms:
         if ":" in term:
             k, v = term.split(':',1)
@@ -308,29 +310,32 @@ def create_post():
                     flash(f"We only support {', '.join(ALLOWED_EXTENSIONS)}.", "error")
                     return render_template('create_post.html')
         # Handle uploaded images
-        image_filenames = []
+        image_urls = []
         for file in files:
             if file and file.filename:
-                file_ext = file.filename.rsplit('.', 1)[1].lower()
-                # new filename: user_id + random_uuid + original_ext
-                file_newname = f"{current_user.id}_{uuid_uuid4().hex}.{file_ext}"
-                file_newname = secure_filename(file_newname)
-                # make sure the folder to store images exists. If not, create one.
-                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_newname))
-                image_filenames.append(file_newname)
+                # Unnecessary to generate new filename since cloudinary
+                # file_ext = file.filename.rsplit('.', 1)[1].lower()
+                # # new filename: user_id + random_uuid + original_ext
+                # file_newname = f"{current_user.id}_{uuid_uuid4().hex}.{file_ext}"
+                # file_newname = secure_filename(file_newname)
+                # Upload to cloudinary
+                upload_result = cloudinary.uploader.upload(file)
+                image_url = upload_result['secure_url']
+                if image_url:
+                    image_urls.append(image_url)
+                # Logic for local upload.
+                # os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                # file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_newname))
+                # image_filenames.append(file_newname)
         new_post = {
             "title": title,
             "author": author,
             "listing_type": listing_type,
             "price": float(price) if price else None,
-            "images": image_filenames, # a list of images uploaded.
+            "images": image_urls, # a list of images uploaded.
             "other_info": other_info,
             "sender_id": ObjectId(current_user.id), # sender as in post sender.
             "sender_name": current_user.username,
-            # "sender_email": current_user.email,
-            # If a user changes their email. This post might be fucked up.
-            # Make the logic clearer. We can discuss later.
             'num_ppl_wanted': 0,
             "created_at": datetime.datetime.now(datetime.timezone.utc),
             "available": True
