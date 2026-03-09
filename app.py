@@ -14,7 +14,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 # from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
 from pymongo import MongoClient
-import cloudinary, cloudinary.uploader, cloudinary.api
+import cloudinary, cloudinary.uploader
 
 # Import the custom database module we wrote
 # To separate it from the db in the mongo client, we name it dbm (database module)
@@ -36,10 +36,10 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redirects unauthorized users here
 
 # Configuration for local uploads
-# Switch to Cloudinary later for storing uploaded images.
-UPLOAD_FOLDER = 'static/seed_post_imgs'
+# UPLOAD_FOLDER = 'static/seed_post_imgs'
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Configuration for Cloudinary uploads
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 cloud_config = cloudinary.config(secure=True)
 
 # Global variables
@@ -265,15 +265,18 @@ def delete_post(post_id):
         # but good to have just in case.
         return {"error": "Can't find this post or it's sender!"}, 403
     # Delete all images of this post.
-    post_images = post.get('images', [])
-    for filename in post_images:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    image_urls = post.get('images', [])
+    for url in image_urls:
+        # https://res.cloudinary.com/djbfufroc/image/upload/v1773018655/gh5sush5epdf1ftfz0jl.jpg
         try:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                print(f"Deleted file: {file_path}") # for debugging
+            url_parts = url.split('/')
+            upload_index = url_parts.index('upload')
+            # upload_index + 2 because cloudinary only wants the part aft version number, bef ext.
+            public_id_with_ext = "/".join(url_parts[upload_index + 2:]) 
+            public_id = public_id_with_ext.split('.', maxsplit = 1)[0]
+            cloudinary.uploader.destroy(public_id)
         except Exception as e:
-            print(f"Error deleting file {file_path}: {e}")
+            print(f"Error deleting file {url}: {e}")
 
     # Remove this post's ID from this user's 'sent_posts' field.
     db.users.update_one({"_id": user_id}, {"$pull": {"sent_posts": p_id}})
@@ -319,7 +322,10 @@ def create_post():
                 # file_newname = f"{current_user.id}_{uuid_uuid4().hex}.{file_ext}"
                 # file_newname = secure_filename(file_newname)
                 # Upload to cloudinary
-                upload_result = cloudinary.uploader.upload(file)
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder = "book-exchange/book-images"
+                )
                 image_url = upload_result['secure_url']
                 if image_url:
                     image_urls.append(image_url)
