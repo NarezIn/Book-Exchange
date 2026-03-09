@@ -14,9 +14,9 @@
 
         <div class="book-images">
             {% if book.images and book.images|length > 0 %}
-                {% for image in book.images %}
+                {% for image_url in book.images %}
                     <div class="book-image-wrapper">
-                        <img src="{{ url_for('static', filename='seed_post_imgs/' + image) }}" class="book-image" alt="Book Image">
+                        <img src="{{ image_url }}" class="book-image" alt="Book Image">
                     </div>
                 {% endfor %}
             {% else %}

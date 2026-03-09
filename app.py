@@ -6,14 +6,15 @@ user authentication, and database interaction.
 """
 import os
 import datetime
-from uuid import uuid4 as uuid_uuid4
+# from uuid import uuid4 as uuid_uuid4
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
+# from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
 from pymongo import MongoClient
+import cloudinary, cloudinary.uploader
 
 # Import the custom database module we wrote
 # To separate it from the db in the mongo client, we name it dbm (database module)
@@ -35,10 +36,11 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redirects unauthorized users here
 
 # Configuration for local uploads
-# Switch to Cloudinary later for storing uploaded images.
-UPLOAD_FOLDER = 'static/seed_post_imgs'
+# UPLOAD_FOLDER = 'static/seed_post_imgs'
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Configuration for Cloudinary uploads
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+cloud_config = cloudinary.config(secure=True)
 
 # Global variables
 VALID_SEARCH_FIELDS = ['title', 'author', 'sender_name', 'other_info']
@@ -131,7 +133,7 @@ def home():
 
     # Try to look for terms with advanced search syntax
     # if the key is not in the valid search list, process as regular search term
-    # for example, it doesn't search for "sapiens" in the DB for "Sapiens: A Brief History of Humankind"
+    # e.g, it doesn't search for "sapiens" in the DB for "Sapiens: A Brief History of Humankind"
     for term in terms:
         if ":" in term:
             k, v = term.split(':',1)
@@ -263,15 +265,18 @@ def delete_post(post_id):
         # but good to have just in case.
         return {"error": "Can't find this post or it's sender!"}, 403
     # Delete all images of this post.
-    post_images = post.get('images', [])
-    for filename in post_images:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    image_urls = post.get('images', [])
+    for url in image_urls:
+        # https://res.cloudinary.com/djbfufroc/image/upload/v1773018655/gh5sush5epdf1ftfz0jl.jpg
         try:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                print(f"Deleted file: {file_path}") # for debugging
+            url_parts = url.split('/')
+            upload_index = url_parts.index('upload')
+            # upload_index + 2 because cloudinary only wants the part aft version number, bef ext.
+            public_id_with_ext = "/".join(url_parts[upload_index + 2:]) 
+            public_id = public_id_with_ext.split('.', maxsplit = 1)[0]
+            cloudinary.uploader.destroy(public_id)
         except Exception as e:
-            print(f"Error deleting file {file_path}: {e}")
+            print(f"Error deleting file {url}: {e}")
 
     # Remove this post's ID from this user's 'sent_posts' field.
     db.users.update_one({"_id": user_id}, {"$pull": {"sent_posts": p_id}})
@@ -308,29 +313,35 @@ def create_post():
                     flash(f"We only support {', '.join(ALLOWED_EXTENSIONS)}.", "error")
                     return render_template('create_post.html')
         # Handle uploaded images
-        image_filenames = []
+        image_urls = []
         for file in files:
             if file and file.filename:
-                file_ext = file.filename.rsplit('.', 1)[1].lower()
-                # new filename: user_id + random_uuid + original_ext
-                file_newname = f"{current_user.id}_{uuid_uuid4().hex}.{file_ext}"
-                file_newname = secure_filename(file_newname)
-                # make sure the folder to store images exists. If not, create one.
-                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_newname))
-                image_filenames.append(file_newname)
+                # Unnecessary to generate new filename since cloudinary
+                # file_ext = file.filename.rsplit('.', 1)[1].lower()
+                # # new filename: user_id + random_uuid + original_ext
+                # file_newname = f"{current_user.id}_{uuid_uuid4().hex}.{file_ext}"
+                # file_newname = secure_filename(file_newname)
+                # Upload to cloudinary
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder = "book-exchange/book-images"
+                )
+                image_url = upload_result['secure_url']
+                if image_url:
+                    image_urls.append(image_url)
+                # Logic for local upload.
+                # os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                # file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_newname))
+                # image_filenames.append(file_newname)
         new_post = {
             "title": title,
             "author": author,
             "listing_type": listing_type,
             "price": float(price) if price else None,
-            "images": image_filenames, # a list of images uploaded.
+            "images": image_urls, # a list of images uploaded.
             "other_info": other_info,
             "sender_id": ObjectId(current_user.id), # sender as in post sender.
             "sender_name": current_user.username,
-            # "sender_email": current_user.email,
-            # If a user changes their email. This post might be fucked up.
-            # Make the logic clearer. We can discuss later.
             'num_ppl_wanted': 0,
             "created_at": datetime.datetime.now(datetime.timezone.utc),
             "available": True
