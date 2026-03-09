@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Exchange</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='imgs/book_exchange_logo_raw.png') }}">
     <!-- Fonts: Playfair Display, Source Serif 4, JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,10 +18,13 @@
 <body>
     <header class="site-header">
         <h1 class="website-logo">
-            Book Exchange (logo placeholder)
+            <a href="/">
+                <img src="{{ url_for('static', filename='imgs/book_exchange_logo_raw.png') }}" alt="Book Exchange Logo" class="logo-img">
+            </a>
+            Book Exchange
         </h1>
         <nav class="site-nav">
-            <a href="/">Index</a>
+            <a href="/">Home</a>
             <span class="nav-separator">|</span>
             <a href="/account">Account</a>
         </nav>
