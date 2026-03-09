@@ -69,24 +69,20 @@ async function handleLikeClick(event) {
 
         if (!response.ok) {
             alert(data.error);
-
-            // Gray out the button so they know they've already liked.
-            // button.disabled = true;
-            // button.innerText = "Forbidden to like!";
             return;
         }
         if (data.action == "like") {
-            button.innerText = "Liked!"
-            button.classList.replace('unliked', 'liked');
+            likeBtn.innerText = "Liked!"
+            likeBtn.classList.replace('unliked', 'liked');
         }
         else {
-            button.innerText = "Unliked!";
-            button.classList.replace('liked', 'unliked');
+            likeBtn.innerText = "Unliked!";
+            likeBtn.classList.replace('liked', 'unliked');
         }
 
         // Update the like count if the backend returned a new count
         if (data.new_count !== undefined) {
-            const post = button.closest('.book-post');
+            const post = likeBtn.closest('.book-post');
             const countDisplay = post.querySelector('.interest-count');
             if (countDisplay) {
                 countDisplay.innerText = data.new_count;
