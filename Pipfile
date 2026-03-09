@@ -9,6 +9,7 @@ flask-login = "*"
 pymongo = "*"
 python-dotenv = "*"
 cloudinary = "*"
+serverless-wsgi = "*"
 
 [dev-packages]
 

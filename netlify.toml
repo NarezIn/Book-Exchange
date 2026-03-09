@@ -1,0 +1,11 @@
+[build]
+  command = "pip install -r requirements.txt"
+  publish = "static" # This is where your CSS/Imgs live
+
+[functions]
+  included_files = ["templates/**", "static/**"]
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/app"
+  status = 200

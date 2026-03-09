@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b61e60cad18db40f9617b53187298f9d399ad5b6fbbf62f431e058db0600744d"
+            "sha256": "a927648a0046de6ae23d6ee052eb9e73a536a9275f689aeb74aeefc094258ed3"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -279,6 +279,14 @@
             "index": "pypi",
             "markers": "python_version >= '3.9'",
             "version": "==1.2.1"
+        },
+        "serverless-wsgi": {
+            "hashes": [
+                "sha256:c2584067e1c2b0e909f83b923d3ab3f19cc645133d53bf203ca249fd77e6baec"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.7'",
+            "version": "==3.1.0"
         },
         "six": {
             "hashes": [
