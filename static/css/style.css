@@ -127,12 +127,13 @@ select:focus-visible {
     display: block;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center;
+    scale: 1.9;
 }
 
 /* Original image (raw) starts visible, scales down and fades out on hover */
 .logo-link:hover .logo-img:not(.hover-v) {
     opacity: 0;
-    transform: scale(0.8);
+    transform: rotate(360deg) scale(0.5);
 }
 
 /* Hover variant starts hidden, rotates and fades in on hover */
@@ -143,7 +144,7 @@ select:focus-visible {
 
 .logo-link:hover .logo-img.hover-v {
     opacity: 1;
-    transform: rotate(360deg) scale(1.5);
+    transform: rotate(20deg) scale(1.2);
 }
 
 @media (max-width: 480px) {
