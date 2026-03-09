@@ -42,36 +42,44 @@ function togglePriceField() {
  * Communicates with the Flask backend to increment the interest count.
  */
 async function handleLikeClick(event) {
+    const likeBtn = event.target.closest('.like-btn');
+
+    if (!likeBtn) return;
     // Since this "like" button is in a book post, and "details of the book"
     // would be shown after a user clicks the post. This line ensures that the
     // click is handled by the "like" button instead of 
-    event.stopPropagation(); 
+    event.stopPropagation();
 
-    const button = event.currentTarget;
-    const bookId = button.getAttribute('data-id');
+    // const button = event.currentTarget;
+    const bookId = likeBtn.getAttribute('data-id');
+
+    if (!bookId || bookId === "null") {
+        console.error("Critical Error: No Book ID found on this button.");
+        return;
+    }
 
     try {
         // Send the asynchronous request to flask to get all info of a book.
-        const response = await fetch(`/like-book/${bookId}`, { 
+        const response = await fetch(`/like-book/${bookId}`, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-        
+
         const data = await response.json();
 
-        if (!response.ok){
-            alert(data.error); 
-            
+        if (!response.ok) {
+            alert(data.error);
+
             // Gray out the button so they know they've already liked.
             // button.disabled = true;
             // button.innerText = "Forbidden to like!";
             return;
         }
-        if (data.action == "like"){
+        if (data.action == "like") {
             button.innerText = "Liked!"
             button.classList.replace('unliked', 'liked');
         }
-        else{
+        else {
             button.innerText = "Unliked!";
             button.classList.replace('liked', 'unliked');
         }
