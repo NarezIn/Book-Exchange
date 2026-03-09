@@ -5,19 +5,22 @@
 <div class="search-container">
     <form action="/" method="GET">
         <input type="text" name="query" placeholder="Search by title, author, description..." value="{{enteredQuery}}" class = "search-bar">
-        <label class = "search-text">Availability:</label>
-        <select name="availability" id="availability-select" class = "search-bar">
-            <option value="">Any</option>
-            <option value="true">Avaliable</option>
-            <option value="false">Not Avaliable</option>
-        </select>
-        <label class = "search-text">Listing Type:</label>
-        <select name="listing-type" id="listing-type-select" class = "search-bar">
-            <option value="">Any</option>
-            <option value="Selling">Selling</option>
-            <option value="Donating">Donating</option>
-            <option value="Lending">Lending</option>
-        </select>
+        <div class="filters">
+            <label class = "search-text" for="availability-select">Availability:</label>
+            <select name="availability" id="availability-select" class = "search-bar">
+                <option value="">Any</option>
+                <option value="true">Available</option>
+                <option value="false">Not Available</option>
+            </select>
+            <label class = "search-text" for="listing-type-select">Listing Type:</label>
+            <select name="listing-type" id="listing-type-select" class = "search-bar">
+                <option value="">Any</option>
+                <option value="Selling">Selling</option>
+                <option value="Donating">Donating</option>
+                <option value="Lending">Lending</option>
+                <option value="ShowingOff">Showing Off</option>
+            </select>
+        </div>
         <button type="submit" class = "search-bar">Search</button>
     </form>
 </div>
