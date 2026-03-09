@@ -109,18 +109,52 @@ select:focus-visible {
     text-transform: capitalize;
 }
 
-.logo-img {
+.logo-link {
+    position: relative;
+    display: block;
+    width: 60px;
+    /* Base width based on height to maintain aspect ratio area */
     height: 60px;
+    margin-right: 16px;
+}
+
+.logo-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
     width: auto;
     display: block;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+/* Original image (raw) starts visible, scales down and fades out on hover */
+.logo-link:hover .logo-img:not(.hover-v) {
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+/* Hover variant starts hidden, rotates and fades in on hover */
+.logo-img.hover-v {
+    opacity: 0;
+    transform: rotate(-20deg) scale(0.8);
+}
+
+.logo-link:hover .logo-img.hover-v {
+    opacity: 1;
+    transform: rotate(360deg) scale(1.5);
 }
 
 @media (max-width: 480px) {
     .website-logo {
         font-size: 2rem;
     }
-    .logo-img {
+
+    .logo-link {
+        width: 40px;
         height: 40px;
+        margin-right: 12px;
     }
 }
 
