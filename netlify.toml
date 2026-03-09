@@ -3,7 +3,7 @@
   publish = "static" # This is where your CSS/Imgs live
 
 [functions]
-  included_files = ["templates/**", "static/**"]
+  included_files = ["templates/**", "static/**", "app.py", "database.py"]
 
 [[redirects]]
   from = "/*"
