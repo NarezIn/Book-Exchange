@@ -1,417 +1,602 @@
-/* Styling for base page */
+/* Minimalist Monochrome Design System */
+:root {
+    --background: #ffffff;
+    --foreground: #000000;
+    --muted: #F5F5F5;
+    --muted-foreground: #525252;
+    --border: #000000;
+    --border-light: #E5E5E5;
+
+    --font-display: "Playfair Display", Georgia, serif;
+    --font-body: "Source Serif 4", Georgia, serif;
+    --font-mono: "JetBrains Mono", monospace;
+
+    --radius: 0px;
+}
+
+/* Base style resets */
+* {
+    box-sizing: border-box;
+    border-radius: var(--radius) !important;
+}
+
 html {
-    font-size: 14px; /* reduce base size */
+    font-size: 16px;
 }
+
 body {
-    font-size: 0.9rem;
+    margin: 0;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.625;
+    -webkit-font-smoothing: antialiased;
+
+    /* Subtle Noise Texture for a paper-like feel */
+    /* background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");*/
+    background-blend-mode: multiply;
 }
-/* Logo */
+
+/* Pattern background for dramatic sections */
+.pattern-horizontal {
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, #000 1px, #000 2px);
+    background-size: 100% 4px;
+    background-color: var(--background);
+    position: relative;
+}
+
+/* Typography Scale */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-display);
+    color: var(--foreground);
+    margin: 0;
+}
+
+/* Interactive States */
+a {
+    color: var(--foreground);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible,
+select:focus-visible {
+    outline: 3px solid var(--foreground);
+    outline-offset: 3px;
+}
+
+/* ==================================
+             BASE LAYOUT
+================================== */
+
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 48px;
+    border-bottom: 8px solid var(--border);
+    /* Ultra thick rule */
+}
+
+@media (max-width: 768px) {
+    .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+        padding: 24px;
+    }
+}
+
 .website-logo {
-    font-size : 32px;
-    font-weight : 700;
-    text-align: left;
+    font-size: 3.5rem;
+    /* 5xl */
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    text-transform: capitalize;
 }
 
-/* navigation bar */
 .site-nav {
-    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
-/* Desktop styling */
-/* @media (min-width: 768px) {
+.nav-separator {
+    margin: 0 16px;
+    color: var(--border-light);
+}
+
+main {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 64px 48px;
+}
+
+@media (max-width: 768px) {
+    main {
+        padding: 40px 24px;
+    }
+}
+
+/* ==================================
+             HOME PAGE
+================================== */
+
+.home-title {
+    font-size: 3rem;
+    /* 8xl */
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+    margin-bottom: 64px;
+    border-top: 4px solid var(--border);
+    /* Thick horizontal rule */
+    padding-top: 24px;
+    word-break: break-word;
+    /* Important for long words on mobile */
+}
+
+@media (max-width: 1024px) {
+    .home-title {
+        font-size: 6rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .home-title {
+        font-size: 4rem;
+        margin-bottom: 40px;
+    }
+}
+
+/* Search Area */
+.search-container {
+    margin-bottom: 80px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 40px;
+}
+
+.search-container form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
+
+@media (min-width: 1024px) {
     .search-container form {
-        flex-direction: row;
-        align-items: center;
-        flex-wrap: wrap;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        align-items: end;
     }
+}
 
-    .search-bar {
-        flex: 1;
-        min-width: 150px;
+.filters {
+    display: contents;
+}
+
+@media (max-width: 1023px) {
+    .filters {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
     }
-} */
+}
 
-/* Styling for home page begins */
-/* Container for all posts */
+.search-bar {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    padding: 16px 0;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--border);
+    width: 100%;
+    color: var(--foreground);
+    transition: border-width 0.1s;
+}
+
+.search-bar::placeholder {
+    color: var(--muted-foreground);
+    font-style: italic;
+    font-family: var(--font-body);
+}
+
+.search-bar:focus {
+    outline: none;
+    border-bottom: 4px solid var(--border);
+}
+
+select.search-bar {
+    appearance: none;
+    padding-right: 24px;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='square' stroke-linejoin='miter'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: 16px;
+}
+
+.search-text {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+button[type="submit"].search-bar {
+    background: var(--foreground);
+    color: var(--background);
+    padding: 16px 40px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    cursor: pointer;
+    border: 2px solid var(--foreground);
+    transition: all 0.1s;
+}
+
+button[type="submit"].search-bar:hover {
+    background: var(--background);
+    color: var(--foreground);
+}
+
+/* Book Grid Layout */
 .book-grid {
     display: grid;
-    gap: 30px 20px; /* 30px row-gap, 20px column-gap */
-    padding: 20px;
+    gap: 48px 32px;
 }
 
-/* Mobile-first: 3 columns layout for phones */
-@media (max-width: 480px) {
+@media (max-width: 640px) {
     .book-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 30px 12px;
-        padding: 12px;
+        grid-template-columns: 1fr;
     }
 }
 
-/* Tablet and Desktop: Multi-column layout */
-@media (min-width: 481px) and (max-width: 799px) {
+@media (min-width: 641px) and (max-width: 1023px) {
     .book-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 28px;
-        padding: 18px;
     }
 }
 
-/* Desktop/Laptop: 14-inch and larger */
-@media (min-width: 800px) {
+@media (min-width: 1024px) {
     .book-grid {
-        grid-template-columns: repeat(5, 1fr);
-        gap: 35px 20px;
-        padding: 24px;
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    .book-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 /* Individual Book Post */
 .book-post {
-border: 2px solid #333;
-    border-radius: 12px;
-    padding: 12px;
-    background-color: var(--mode-color);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+    border: 1px solid var(--border);
+    padding: 32px 24px;
+    background-color: var(--background);
     cursor: pointer;
-    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative;
+    transition: all 0.1s;
+    /* Instant swap */
 }
 
-.book-post p {
-    margin: 2px 0;
-    font-size: 0.8em;
-    line-height: 1.2;
-}
-
-.book-post h3 {
-    margin: 0 0 3px 0;
-    font-size: 1em;
-    line-height: 1.2;
-    word-wrap: break-word;
-    /* white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; */
-    /* max-width: 100%;
-    display: block; */
-}
-
-/* Mobile: Adjust text sizing and spacing */
-@media (max-width: 480px) {
-    .book-post {
-        padding: 8px;
-        border-radius: 10px;
-    }
-
-    .book-post h3 {
-        font-size: 0.9em;
-        margin: 0 0 2px 0;
-    }
-
-    .book-post p {
-        font-size: 0.8em;
-        margin: 1px 0;
-        line-height: 1.15;
-    }
-}
-
-/* Tablet: Adjust spacing */
-@media (min-width: 481px) and (max-width: 799px) {
-    .book-post {
-        padding: 10px;
-    }
-
-    .book-post h3 {
-        font-size: 0.95em;
-        margin: 0 0 2px 0;
-    }
-
-    .book-post p {
-        font-size: 0.85em;
-        margin: 1px 0;
-        line-height: 1.2;
-    }
-}
-
-/* Desktop: Enhance spacing and styling */
-@media (min-width: 800px) {
-    .book-post {
-        padding: 10px;
-        border-radius: 12px;
-    }
-
-    .book-post h3 {
-        font-size: 0.95em;
-        margin: 0 0 2px 0;
-    }
-
-    .book-post p {
-        font-size: 0.8em;
-    }
-}
-
-/* Hover effect for desktop, makes it feel interactive */
 .book-post:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.18);
-    border-color: #000;
+    background-color: var(--foreground);
+    color: var(--background);
+    border-color: var(--foreground);
 }
 
-@media (max-width: 480px) {
-    .book-post:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    }
-}
-
-/* Book Status Coloring */
-.mode-selling {
-    --mode-color: #ffe5e5;
-}
-
-.mode-lending {
-    --mode-color: #e6f0ff;
-}
-
-.mode-donating {
-    --mode-color: #e6fff2;
-}
-
-.is-unavailable {
-    filter: grayscale(40%);
-    opacity: 0.75;
-}
-
+/* Grayscale Image that reveals on hover with zoom */
 .book-cover-wrapper {
     width: 100%;
+    height: 320px;
     overflow: hidden;
-    border-radius: 8px;
-    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    /* Sharp bounding box */
+    margin-bottom: 32px;
     flex-shrink: 0;
+    background-color: var(--muted);
 }
 
-/* Mobile: Smaller image height for phones */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .book-cover-wrapper {
-        height: 150px;
-        margin-bottom: 6px;
-    }
-}
-
-/* Tablet: Medium image height */
-@media (min-width: 481px) and (max-width: 799px) {
-    .book-cover-wrapper {
-        height: 240px;
-        margin-bottom: 10px;
-    }
-}
-
-/* Desktop/Laptop: Taller image height */
-@media (min-width: 800px) {
-    .book-cover-wrapper {
-        height: 220px;
-        margin-bottom: 8px;
+        height: 280px;
     }
 }
 
 .book-cover {
     width: 100%;
     height: 100%;
-    /* This is the magic property: it acts like 'background-size: cover' for <img> tags */
-    object-fit: cover; 
+    object-fit: cover;
     object-position: center;
     display: block;
+    filter: grayscale(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s;
 }
 
-/* Search bar and container */
-.search-container form {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 10px;
+.book-post:hover .book-cover {
+    filter: grayscale(0%);
+    transform: scale(1.05);
 }
 
-/* filters row groups availability + listing elements */
-.filters {
+/* Typography inside cards */
+.book-post h3 {
+    font-size: 1.5rem;
+    /* 2xl */
+    line-height: 1.1;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.025em;
+}
+
+.book-post .author-name {
+    font-style: italic;
+    color: var(--muted-foreground);
+    margin: 0 0 24px 0;
+    font-size: 1rem;
+}
+
+.book-post:hover .author-name {
+    color: var(--border-light);
+}
+
+.book-post:hover .book-title {
+    color: var(--border-light);
+}
+
+/* Detail lines */
+.book-post-detail {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin: 8px 0;
     display: flex;
-    gap: 10px;
-    flex-wrap: nowrap;
+    justify-content: space-between;
     align-items: center;
-    width: 100%;
-}
-.filters .search-text {
-    margin: 0;
-}
-
-/* first text input spans full width */
-.search-bar:first-of-type {
-    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 8px;
+    letter-spacing: 0.05em;
 }
 
-/* button spans full width */
-.search-container form button {
-    grid-column: 1 / -1;
+.book-post:hover .book-post-detail {
+    border-bottom-color: #333;
 }
 
-/* availability label + select and listing label + select should each use one column */
-#availability-select,
-#listing-type-select,
-.search-container label[for="availability"],
-.search-container label[for="listing-type"],
-.search-text {
-    display: inline-block;
+.book-post-detail strong {
+    font-weight: 700;
 }
 
-.search-bar {
-    padding: 6px 8px;
-    font-size: 13px;
-    width: 100%;
+/* Type Badge */
+.listing-badge {
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    background: var(--background);
+    border: 2px solid var(--foreground);
+    padding: 6px 16px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    z-index: 10;
 }
 
-.search-text {
-    font-size: 13px;
-    font-weight: 600;
-    margin: 0;
-    white-space: nowrap;
-    align-self: center;
+.book-post:hover .listing-badge {
+    background: var(--foreground);
+    color: var(--background);
+    border-color: var(--background);
 }
 
+/* Unavailable State */
+.is-unavailable {
+    opacity: 0.4;
+}
+
+.is-unavailable .listing-badge {
+    text-decoration: line-through;
+}
+
+/* Like Button inside Card */
 .like-btn {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    padding: 8px;
     margin-top: auto;
+    width: 100%;
+    background: transparent;
+    border: 2px solid var(--foreground);
+    color: var(--foreground);
+    padding: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     cursor: pointer;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.85em;
-    transition: all 0.2s ease;
-    background-color: rgba(0, 0, 0, 0.1);
+    transition: all 0.1s;
+    margin-top: 32px;
 }
 
-/* Mobile: Larger touch target */
-@media (max-width: 480px) {
-    .like-btn {
-        padding: 10px;
-        font-size: 0.9em;
-    }
-
-    .like-btn:active {
-        background-color: rgba(0, 0, 0, 0.2);
-        transform: scale(0.98);
-    }
+.book-post:hover .like-btn {
+    border-color: var(--background);
+    color: var(--background);
 }
 
-/* Desktop: Standard button styling */
-@media (min-width: 481px) {
-    .like-btn {
-        padding: 9px;
-        font-size: 0.85em;
-    }
-
-    .like-btn:hover {
-        background-color: rgba(0, 0, 0, 0.15);
-        transform: translateY(-1px);
-    }
+.like-btn:hover,
+.book-post:hover .like-btn:hover {
+    background: var(--foreground);
+    color: var(--background);
 }
 
-/* Home header and post button */
+.book-post:hover .like-btn:hover {
+    background: var(--background);
+    color: var(--foreground);
+}
+
+/* Home Footer area */
 .home-header {
-    margin-top: 40px;
-    padding: 20px;
-}
-
-@media (max-width: 480px) {
-    .home-header {
-        margin-top: 60px;
-        padding: 15px;
-    }
+    margin-top: 120px;
+    border-top: 8px solid var(--border);
+    /* Ultra thick rule */
+    padding-top: 48px;
+    text-align: center;
 }
 
 .post-button {
     display: inline-block;
-    padding: 12px 20px;
-    background-color: #cdc756;
-    color: rgb(0, 0, 0);
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    padding: 24px 48px;
+    background-color: var(--foreground);
+    color: var(--background);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border: 2px solid var(--foreground);
+    transition: all 0.1s;
 }
 
 .post-button:hover {
-    background-color: #555;
-    transform: translateY(-2px);
+    background-color: var(--background);
+    color: var(--foreground);
+    text-decoration: none;
 }
 
-/* Styling for home page ends */
+
+/* ==================================
+       PRESERVED LEGACY STYLES
+================================== */
 
 /* Styling for book_details page begins */
-/* Layout for the whole page */
 .book-details-container {
     display: flex;
     gap: 40px;
     padding: 20px;
 }
 
-/* For the book-images entirety */
 .book-images {
-    flex: 1; 
+    flex: 1;
     display: flex;
     gap: 15px;
-    overflow-x: auto; /* Enables horizontal scrolling */
-    white-space: nowrap; /* Prevents images from wrapping to a new line */
-    padding-bottom: 10px; /* Space for the scrollbar so it doesn't touch the images */
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 10px;
 }
 
-/* For each book-image */
 .book-image {
-    width: 300px;           /* Fixed width so they don't shrink */
-    flex-shrink: 0;         /* Prevents images from squishing to fit the container */
-    height: 400px;          /* You can adjust this height as needed */
+    width: 300px;
+    flex-shrink: 0;
+    height: 400px;
     object-fit: cover;
     border-radius: 8px;
+    /* Temporarily allow radius here to not break legacy page logic */
     border: 1px solid #ddd;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-/* Styling for book_details page ends */
 
-/* Styling for account page begins */
-.account-actions {
+/* ==================================
+          ACCOUNT PAGE
+================================== */
+
+.account-container {
+    max-width: 1000px;
+}
+
+.section-title {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    /* 5xl equivalent */
+    font-weight: 900;
+    margin-bottom: 32px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+}
+
+.section-divider {
+    border: 0;
+    border-top: 4px solid var(--border);
+    /* Thick horizontal rule */
+    margin: 64px 0;
+}
+
+.account-form {
+    max-width: 480px;
+}
+
+.form-help-text {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    display: block;
+    margin-top: 8px;
+}
+
+.empty-state {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+    color: var(--muted-foreground);
+    border-top: 1px solid var(--border-light);
+    padding-top: 16px;
+}
+
+.post-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+a.like-btn {
+    display: block;
     text-align: center;
-    margin-top: 40px;
-    margin-bottom: 20px;
+}
+
+a.like-btn:hover {
+    text-decoration: none;
+}
+
+/* Account specific actions */
+.account-actions {
+    margin-top: 64px;
+    border-top: 2px solid var(--border);
+    padding-top: 32px;
+    text-align: left;
 }
 
 .logout-btn {
     display: inline-block;
-    padding: 12px 24px;
-    background-color: #dc3545;
-    color: white;
+    padding: 16px 32px;
+    background-color: transparent;
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border: 2px solid var(--border);
+    transition: all 0.1s;
+    cursor: pointer;
+}
+
+.logout-btn:hover,
+.delete-btn:hover {
+    background-color: var(--foreground) !important;
+    color: var(--background) !important;
     text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.2s ease;
 }
-
-.logout-btn:hover {
-    background-color: #c82333;
-    transform: translateY(-2px);
-}
-
-/* Mobile adjustments for account page */
-@media (max-width: 480px) {
-    .account-actions {
-        margin-top: 30px;
-        margin-bottom: 15px;
-    }
-
-    .logout-btn {
-        padding: 14px 28px;
-        font-size: 1em;
-    }
-}
-/* Styling for account page ends */
